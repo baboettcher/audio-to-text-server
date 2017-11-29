@@ -1,0 +1,26 @@
+{
+  "name": "audio-to-text-server",
+  "version": "1.0.0",
+  "description": "audio file to text server for bankyo",
+  "main": "audio-to-text-server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jioakim/audio-to-text-server.git"
+  },
+  "author": "team rabbits",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jioakim/audio-to-text-server/issues"
+  },
+  "homepage": "https://github.com/jioakim/audio-to-text-server#readme",
+  "dependencies": {
+    "@google-cloud/speech": "^0.11.0",
+    "express": "^4.16.2",
+    "firebase-admin": "^5.5.1",
+    "socket.io": "^2.0.4",
+    "socket.io-stream": "^0.9.1"
+  }
+}
