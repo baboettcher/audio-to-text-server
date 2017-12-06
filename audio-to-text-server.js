@@ -2,12 +2,12 @@ var fs = require('fs');
 // required if we are to run the server over https
 var http = require('http');
 var express = require('express');
-// socket.io-stream for managein binary streams on client and server
+// socket.io-stream for managing binary streams on client and server
 var ss = require('socket.io-stream');
-// authenticate through firebase and store the flac file in the default firebase bucjet to avoid the complex rest bucket post file process
+// authenticate through firebase and store the flac file in the default firebase bucket to avoid the complex rest bucket post file process
 var admin = require('firebase-admin');
 var Speech = require('@google-cloud/speech').SpeechClient;
-//console.log(Speech);
+
 var serviceAccount = require('./key/benkyohr-e00dc-firebase-adminsdk-125v5-d1fdc86be0.json');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -18,7 +18,7 @@ var app = express();
 
 var serverPort = 9006;
 
-var server = https.createServer(app);
+var server = http.createServer(app);
 
 //socket.io requirement and initialization
 var io = require('socket.io')(server);
@@ -38,13 +38,14 @@ io.on('connection', function(socket){
       // get a reference through the default google bucket of firebase app
       var storageRef = admin.storage().bucket();
       // upload flac file to google bucket
-      storageRef.upload( filePathFLAC, { destination: fileNameFLACObj.fileNameFLAC, public: true })
+      storageRef.upload( filePathFLAC, { destination: `flacFiles/${fileNameFLACObj.fileNameFLAC}`, public: true })
       .then(function(response){
         console.log('upload completed');
-        var bucketURI = `gs://benkyohr-e00dc.appspot.com/${fileNameFLACObj.fileNameFLAC}`;
+        var publicBucketURL = createPublicFileURL(`flacFiles/${fileNameFLACObj.fileNameFLAC}`);
+        var bucketURI = `gs://benkyohr-e00dc.appspot.com/flacFiles/${fileNameFLACObj.fileNameFLAC}`;
         // call the function that gets back the text from the flac file on the google bucket
         asyncRecognizeGCS(bucketURI, 'FLAC', 16000, 'en-US', function(transcribedText){
-          socket.emit('textserver-transcribebtext', {transcribedText}, (confirmation) =>{
+          socket.emit('textserver-transcribebtext', {transcribedText: transcribedText, publicBucketURL:publicBucketURL}, (confirmation) =>{
             if (confirmation) {
               socket.disconnect();
             }
@@ -59,7 +60,9 @@ io.on('connection', function(socket){
   });
 });
 
-
+function createPublicFileURL (storageName) { 
+  return `https://storage.googleapis.com/benkyohr-e00dc.appspot.com/${encodeURIComponent(storageName)}`; 
+}
 
 server.listen(serverPort, function(){
   console.log('HTTP server up and running at %s port', serverPort);
@@ -116,7 +119,6 @@ function asyncRecognizeGCS (gcsUri, encoding, sampleRateHertz, languageCode, cal
         result.alternatives[0].transcript).join('\n');
       // here the promise for transcribing the text from the google bucket flac file resolves
       // and the text is stored on the transcription variable
-      // console.log(`Transcription: ${transcription}`);
       callback(transcription);
     })
     .catch((err) => {
