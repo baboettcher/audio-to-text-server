@@ -26,7 +26,7 @@ var io = require('socket.io')(server);
 io.on('connection', function(socket){
   console.log('new connection');
   // socket.io-stream event listening from the app-server
-  ss(socket).on('appserver-stream-request', function(stream, fileNameFLACObj, aknFn){
+  ss(socket).on('appserver-stream-request', function(stream, fileNameFLACObj){
     const filePathFLAC = `./files_for_text/${fileNameFLACObj.fileNameFLAC}`;
     // node filestream to save file on server filesystem
     console.log(filePathFLAC);
@@ -34,7 +34,6 @@ io.on('connection', function(socket){
     stream.pipe(writeStream);
     // when flac file has completely arrived form app-server
     stream.on('end', ()=>{
-      aknFn(true);
       // get a reference through the default google bucket of firebase app
       var storageRef = admin.storage().bucket();
       // upload flac file to google bucket
