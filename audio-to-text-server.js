@@ -44,7 +44,7 @@ io.on('connection', function(socket){
         var bucketURI = `gs://benkyohr-e00dc.appspot.com/flacFiles/${fileNameFLACObj.fileNameFLAC}`;
         // call the function that gets back the text from the flac file on the google bucket
         asyncRecognizeGCS(bucketURI, 'FLAC', 16000, 'en-US', function(transcribedText){
-          socket.emit('textserver-transcribebtext', {transcribedText: transcribedText, publicBucketURL:publicBucketURL}, (confirmation) =>{
+          socket.emit('textserver-transcribedtext', {transcribedText: transcribedText, publicBucketURL:publicBucketURL}, (confirmation) =>{
             if (confirmation) {
               socket.disconnect();
             }
